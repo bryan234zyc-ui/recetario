@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recetario Bryan Yela · 360 Nutrición</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --dark: #1A1A18;
+    --green: #3D6B47;
+    --green-light: #5A9467;
+    --green-pale: #EAF2EC;
+    --gold: #C8943A;
+    --gold-light: #F0D49A;
+    --red: #C45C3A;
+    --warm: #F0EAD6;
+    --card-bg: #FFFFFF;
+    --shadow: 0 4px 24px rgba(26,26,24,0.08);
+    --shadow-hover: 0 12px 40px rgba(26,26,24,0.15);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+
+  header {
+    background: var(--dark);
+    padding: 0 2rem;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold-light); letter-spacing: 0.02em; }
+  .logo span { color: #fff; font-weight: 400; font-style: italic; }
+  .stats-bar { display: flex; gap: 1.5rem; align-items: center; }
+  .stat { color: rgba(255,255,255,0.6); font-size: 0.78rem; font-weight: 500; }
+  .stat strong { color: var(--gold-light); }
+
+  .hero {
+    background: linear-gradient(135deg, var(--dark) 0%, #2D4A35 50%, var(--green) 100%);
+    padding: 3.5rem 2rem 2.5rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -50%; left: -20%;
+    width: 60%; height: 200%;
+    background: radial-gradient(ellipse, rgba(200,148,58,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3rem); color: #fff; line-height: 1.1; margin-bottom: 0.5rem; }
+  .hero-title em { color: var(--gold-light); font-style: italic; }
+  .hero-sub { color: rgba(255,255,255,0.65); font-size: 0.95rem; font-weight: 300; margin-bottom: 1.8rem; }
+
+  .search-wrap { max-width: 520px; margin: 0 auto; position: relative; }
+  .search-input {
+    width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
+    border: none; border-radius: 50px;
+    font-family: 'DM Sans', sans-serif; font-size: 1rem;
+    background: rgba(255,255,255,0.95); outline: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2); color: var(--dark);
+    transition: box-shadow 0.2s;
+  }
+  .search-input:focus { box-shadow: 0 4px 20px rgba(200,148,58,0.4); }
+  .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem; pointer-events: none; }
+  .search-input::placeholder { color: #999; }
+
+  .filters {
+    display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;
+    padding: 1.5rem 1rem;
+    background: var(--warm); border-bottom: 1px solid rgba(61,107,71,0.12);
+  }
+  .filter-btn {
+    padding: 0.45rem 1.1rem; border-radius: 50px; border: 1.5px solid transparent;
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; background: white; color: var(--dark);
+    border-color: rgba(61,107,71,0.2);
+  }
+  .filter-btn:hover { border-color: var(--green); color: var(--green); }
+  .filter-btn.active { background: var(--green); color: white; border-color: var(--green); }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .section-title {
+    font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--dark);
+    margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: rgba(61,107,71,0.2); margin-left: 0.5rem; }
+  .count-badge { background: var(--green-pale); color: var(--green); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 50px; }
+
+  .recipes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+
+  .recipe-card {
+    background: var(--card-bg); border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow); cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+    border: 1px solid rgba(61,107,71,0.06);
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .recipe-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+  .card-header { padding: 1.1rem 1.2rem 0.5rem; display: flex; align-items: flex-start; gap: 0.8rem; }
+  .meal-emoji { font-size: 1.8rem; flex-shrink: 0; width: 46px; height: 46px; background: var(--green-pale); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; line-height: 1.25; color: var(--dark); flex: 1; }
+  .card-body { padding: 0 1.2rem 1.2rem; }
+  .card-preview { font-size: 0.82rem; color: #666; line-height: 1.5; margin-top: 0.4rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.8rem; }
+  .tag { font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .tag-desayuno { background: #FFF3CD; color: #9A6900; }
+  .tag-comida { background: #D4EDDA; color: #1E5E2F; }
+  .tag-cena { background: #D6EAF8; color: #1A5276; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(26,26,24,0.7); z-index: 200;
+    backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 20px; max-width: 560px; width: 100%;
+    max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .modal-header { background: linear-gradient(135deg, var(--dark), var(--green)); padding: 1.8rem 1.8rem 1.5rem; border-radius: 20px 20px 0 0; position: relative; }
+  .modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .modal-close:hover { background: rgba(255,255,255,0.3); }
+  .modal-emoji { font-size: 2.5rem; margin-bottom: 0.6rem; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: white; line-height: 1.2; }
+  .modal-meal-type { margin-top: 0.4rem; font-size: 0.82rem; color: rgba(255,255,255,0.65); font-weight: 500; }
+  .modal-body { padding: 1.6rem 1.8rem; }
+  .ingredients-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--green); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem; }
+  .ingredients-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.4rem; }
+  .ingredients-list li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.9rem; line-height: 1.4; color: #333; }
+  .ingredients-list li::before { content: '•'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .prep-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem; }
+  .prep-text { font-size: 0.9rem; line-height: 1.7; color: #444; background: var(--warm); padding: 1rem 1.2rem; border-radius: 10px; border-left: 3px solid var(--gold); }
+  .tip-box { background: var(--green-pale); border-radius: 10px; padding: 0.8rem 1rem; margin-top: 1rem; font-size: 0.83rem; color: var(--green); border-left: 3px solid var(--green); }
+  .tip-box strong { font-weight: 600; }
+
+  .empty { text-align: center; padding: 4rem 2rem; color: #999; }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty h3 { font-family: 'Playfair Display', serif; color: var(--dark); margin-bottom: 0.5rem; }
+
+  .info-box { background: linear-gradient(135deg, #EAF2EC, #F5F0E8); border: 1.5px solid rgba(61,107,71,0.15); border-radius: 16px; padding: 1.4rem 1.6rem; margin-top: 2rem; }
+  .info-box-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--green); margin-bottom: 0.8rem; }
+  .info-box p { font-size: 0.88rem; color: #444; line-height: 1.6; margin-bottom: 0.5rem; }
+
+  .snack-strip { background: linear-gradient(135deg, #FFF5F0, #FFF0E0); border: 1.5px solid rgba(196,92,58,0.15); border-radius: 16px; padding: 1.4rem 1.6rem; margin-top: 1.2rem; cursor: pointer; transition: box-shadow 0.2s; }
+  .snack-strip:hover { box-shadow: var(--shadow-hover); }
+  .snack-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.2rem; }
+  .snack-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--red); display: flex; align-items: center; gap: 0.5rem; }
+  .snack-toggle { font-size: 1rem; color: var(--red); transition: transform 0.3s; }
+  .snack-sub { font-size: 0.82rem; color: #999; }
+  .snack-content { display: none; margin-top: 1rem; flex-direction: column; gap: 0.5rem; }
+  .snack-item { font-size: 0.88rem; color: #555; line-height: 1.5; padding: 0.5rem 0.8rem; background: white; border-radius: 8px; border-left: 3px solid var(--red); }
+
+  @media (max-width: 600px) {
+    .stats-bar { display: none; }
+    header { padding: 0 1rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+    .modal-body { padding: 1.2rem; }
+    .modal-header { padding: 1.4rem 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Recetario <span>Bryan Yela</span></div>
+  <div class="stats-bar">
+    <div class="stat">🥗 <strong>360</strong> Nutrición</div>
+    <div class="stat">📋 <strong>19</strong> Planes · Feb 2024 – Abr 2025</div>
+  </div>
+</header>
+
+<div class="hero">
+  <h1 class="hero-title">Tu recetario <em>completo</em></h1>
+  <p class="hero-sub">Todas las recetas de tus 19 planes de nutrición — febrero 2024 a abril 2025</p>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" id="searchInput" placeholder="Buscar receta, ingrediente..." oninput="filterRecipes()">
+  </div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="setFilter('all', this)">✨ Todas</button>
+  <button class="filter-btn" onclick="setFilter('desayuno', this)">🌅 Desayunos</button>
+  <button class="filter-btn" onclick="setFilter('comida', this)">☀️ Comidas</button>
+  <button class="filter-btn" onclick="setFilter('cena', this)">🌙 Cenas</button>
+</div>
+
+<main>
+  <div class="section-title">Recetas <span class="count-badge" id="countBadge">0</span></div>
+  <div class="recipes-grid" id="recipesGrid"></div>
+
+  <!-- SNACKS CLÁSICOS -->
+  <div class="snack-strip" onclick="toggleSnacks('snack1','toggle1')">
+    <div class="snack-header">
+      <div class="snack-title">🍎 Snacks saludables (media mañana / tarde)</div>
+      <div class="snack-toggle" id="toggle1">▼</div>
+    </div>
+    <div class="snack-sub">Opciones para cuando tienes hambre entre comidas</div>
+    <div class="snack-content" id="snack1">
+      <div class="snack-item">🍇 <strong>Fruta + nueces:</strong> 1 tza uvas / manzana / pera / fresas / berries / piña / 2 ciruelas / 1 mango ataulfo / 2 kiwi + 10 almendras ó 6 mitades de nuez ó 15 pistaches ú 8 nueces de la india ó cacahuates sin sal.</div>
+      <div class="snack-item">🫙 <strong>Yogurt con fruta:</strong> ½ tza yogurt natural + ½ tza fresas o berries o papaya + 1 carlos V o larín sin azúcar.</div>
+      <div class="snack-item">🍿 <strong>Palomitas naturales:</strong> 1 bolsa individual 4buddies o slimpop (NATURALES).</div>
+      <div class="snack-item">🥜 <strong>Berry nuts:</strong> 1 bolsa individual.</div>
+      <div class="snack-item">🥭 <strong>Bowl fresco:</strong> ½ tza pepino + ½ tza jícama + 1 mango chico + 18 cacahuates (limón y Tajín light).</div>
+      <div class="snack-item">🍞 <strong>Sándwich dulce:</strong> 1 reb de pan integral + 1 cda de nucolato + poco chocolate amargo.</div>
+      <div class="snack-item">🍫 <strong>Postre TikTok:</strong> 2 rice cakes con crema de cacahuate + cacahuate en trocitos + chocolate sin azúcar derretido + pizca de sal. Refrigerar 10 min.</div>
+      <div class="snack-item">🌾 <strong>Churritos de amaranto:</strong> 1 bolsa 50g Nochiola O rodajitas de papa 4 buddies.</div>
+      <div class="snack-item">🫐 <strong>Berries con chocolate:</strong> 1 tza blueberries + 20g de chocolate 70-100% cacao (Ah cacao) + 1 cdita aceite de coco.</div>
+      <div class="snack-item">🌰 <strong>Dátiles con chocolate:</strong> 3 dátiles + 1 cda de crema de almendras + 15g de chocolate con aceite de coco.</div>
+    </div>
+  </div>
+
+  <!-- SNACKS GYM / PLANES RECIENTES -->
+  <div class="snack-strip" style="background: linear-gradient(135deg,#F0F4FF,#EAF2EC);" onclick="toggleSnacks('snack2','toggle2')">
+    <div class="snack-header">
+      <div class="snack-title" style="color:#3D6B47;">💪 Snacks para entrenamiento (planes recientes)</div>
+      <div class="snack-toggle" id="toggle2" style="color:#3D6B47;">▼</div>
+    </div>
+    <div class="snack-sub">Para días de gym o cuando necesitas más energía</div>
+    <div class="snack-content" id="snack2">
+      <div class="snack-item" style="border-left-color:#3D6B47;">🍫 <strong>Brownie Fiber One</strong> + 1 taza de café</div>
+      <div class="snack-item" style="border-left-color:#3D6B47;">🍪 <strong>Galletas Chispi Chocs</strong> + 1 taza de café</div>
+      <div class="snack-item" style="border-left-color:#3D6B47;">🌟 <strong>Galleta Alquimia</strong> + 1 taza de café</div>
+      <div class="snack-item" style="border-left-color:#3D6B47;">🍫 <strong>Barrita NAKD o That's It</strong> + 1 taza de café</div>
+      <div class="snack-item" style="border-left-color:#3D6B47;">🥛 <strong>Chobanni</strong> (14-20g proteína)</div>
+      <div class="snack-item" style="border-left-color:#3D6B47;">🥔 <strong>Papas horneadas:</strong> ZUMITAM o Kettle Cooked HEB o Susalitas + pepino, jícama, zanahoria.</div>
+      <div class="snack-item" style="border-left-color:#3D6B47;">🍿 <strong>Palomitas air popped</strong> + palitos de verduras con limón y salsa.</div>
+    </div>
+  </div>
+
+  <!-- INFO BOX -->
+  <div class="info-box" style="margin-top:1.5rem;">
+    <div class="info-box-title">💡 Reglas de oro de tu plan</div>
+    <p>💧 <strong>Hidratación:</strong> Al menos 3-4 litros de agua, infusiones, limonada, Jamaica o té con stevia / monk fruit al día.</p>
+    <p>🥗 <strong>Orden al comer:</strong> 1° Verduras (ensalada, vapor, caldo) → 2° Proteína + grasa → 3° Guarnición (arroz, pasta, tortillas, tostadas).</p>
+    <p>🍳 <strong>Aceites recomendados:</strong> Siempre cocinar con 1 cdita de aceite de aguacate, coco, oliva extravirgen o ghee.</p>
+    <p>🌿 <strong>Verduras:</strong> Son libres al gusto — agrégalas siempre que puedas, no importa la preparación.</p>
+  </div>
+</main>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <div class="modal-emoji" id="modalEmoji"></div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-meal-type" id="modalMealType"></div>
+    </div>
+    <div class="modal-body">
+      <div class="ingredients-title">🛒 Ingredientes</div>
+      <ul class="ingredients-list" id="modalIngredients"></ul>
+      <div class="prep-title">👨‍🍳 Preparación</div>
+      <div class="prep-text" id="modalPrep"></div>
+      <div class="tip-box" id="modalTip" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const recipes = [
+  // ===== DESAYUNOS =====
+  {id:1,name:"Huevo con jamón de pavo",category:"desayuno",emoji:"🍳",
+   preview:"Guiso de pechuga de pavo con huevo, servido con 2-3 tortillas de maíz.",
+   ingredients:["2 rebanadas de pechuga de pavo, en trozos","2 huevos","2-3 tortillas de maíz","1 cdita de aceite de aguacate, coco u oliva, o ghee","Pico de gallo al gusto (opcional)"],
+   prep:"Guisar con 1 cdita de aceite la pechuga de pavo en trozos. Agregar los 2 huevos y cocinar al gusto. Servir con las tortillas de maíz y pico de gallo.",
+   tip:"Receta presente en casi todos los planes. Puedes agregar frijoles molidos a un lado."},
+  {id:2,name:"Sándwich simple de pavo",category:"desayuno",emoji:"🥪",
+   preview:"Pan cero cero con aguacate o mayonesa, pavo, queso panela y huevo estrellado.",
+   ingredients:["2 rebanadas de pan cero cero","1/3 pza aguacate (o 1 cdita mayonesa)","2 rebanadas de pechuga de pavo","1 rebanada de queso panela","1 huevo estrellado","Espinacas al gusto"],
+   prep:"Tostar el pan si deseas. Untar el aguacate o mayonesa. Armar con pavo, queso panela, el huevo estrellado y espinacas.",tip:""},
+  {id:3,name:"Nachos con huevo",category:"desayuno",emoji:"🧀",
+   preview:"Totopos SUSALIA con frijoles, queso panela, huevos estrellados, aguacate y pico de gallo.",
+   ingredients:["1 puño de totopos SUSALIA","½ tza frijoles molidos sin grasa (con poco caldo de pollo)","3-4 cdas de queso panela rallado","2 huevos estrellados","1/3 pza aguacate","Pico de gallo con cilantro"],
+   prep:"Calentar frijoles con poco caldo. Poner totopos en plato, agregar frijoles calientes, queso rallado y 2 huevos estrellados encima. Terminar con aguacate y pico de gallo.",tip:""},
+  {id:4,name:"Huevo estrellado con frijoles",category:"desayuno",emoji:"🫘",
+   preview:"Frijol molido con 2 huevos estrellados, queso rallado y tostadas horneadas.",
+   ingredients:["1/3 tza frijol molido sin grasa","2 huevos estrellados","3 cdas queso rallado","1-2 tostadas horneadas"],
+   prep:"Calentar el frijol molido. Estrelllar los 2 huevos sobre los frijoles. Agregar queso rallado encima. Servir con tostadas horneadas.",tip:""},
+  {id:5,name:"Omelette con verduras y queso Oaxaca",category:"desayuno",emoji:"🫑",
+   preview:"Omelette de 2 huevos con pimientos, cebolla, espinacas y queso Oaxaca fundido.",
+   ingredients:["2 huevos","Pimientos de colores, cebolla y espinacas al gusto","40g de queso Oaxaca rallado","2 rebanadas de pan tostado","1 cdita de mantequilla","1 cdita de aceite"],
+   prep:"Batir los huevos y mezclar con las verduras picadas. Cocinar como omelette con aceite. Al voltear, agregar el queso Oaxaca rallado. Servir con pan tostado con poca mantequilla.",tip:""},
+  {id:6,name:"Tacos de barbacoa",category:"desayuno",emoji:"🌮",
+   preview:"Barbacoa (preferir lengua) en 2-4 tortillas de maíz con salsa sin aceite.",
+   ingredients:["70-90g de barbacoa ya cocida (preferir lengua)","2 tortillas de maíz ó 4 delgaditas","Salsa sin aceite","Verduras al gusto (cebolla, cilantro)","Aguacate opcional"],
+   prep:"Calentar las tortillas. Servir la barbacoa sobre las tortillas. Acompañar con salsa sin aceite y verduras al gusto.",
+   tip:"Uno de los desayunos más frecuentes en todos los planes."},
+  {id:7,name:"Hot cakes de chocolate de avena",category:"desayuno",emoji:"🥞",
+   preview:"Hot cakes de avena licuada con cacao, plátano y toppings de yogurt.",
+   ingredients:["1/3 tza de avena","1/3 tza de leche","¼ plátano","1 cdita de cacao","½ cdita de polvo para hornear","1 sobre de splenda o endulzante al gusto","Canela al gusto","Chorrito de vainilla","1 cdita de ghee para cocinar","3 cdas de yogurt (topping)","Poco plátano en trocitos (topping)"],
+   prep:"Licuar la avena hasta harina. Agregar leche, plátano, cacao, polvo para hornear, endulzante, canela y vainilla. Licuar todo. Cocinar con ghee a fuego medio. Servir con yogurt y plátano.",tip:""},
+  {id:8,name:"Sincronizadas con pavo",category:"desayuno",emoji:"🫓",
+   preview:"Tortillas con queso Oaxaca/panela y pechuga de pavo, con aguacate y salsa.",
+   ingredients:["2-3 tortillas de maíz o de avena","2-3 cdas de queso Oaxaca o panela o mozzarella rallado (c/u)","1 rebanada de pechuga de pavo repartida","1/3 pza aguacate","Salsa al gusto"],
+   prep:"Repartir el pavo y queso entre las tortillas. Doblar y calentar en sartén hasta que el queso se derrita y las tortillas estén doradas. Servir con aguacate y salsa.",tip:""},
+  {id:9,name:"Queso en salsa de tomate",category:"desayuno",emoji:"🍅",
+   preview:"Queso panela o fresco guisado en salsa de tomate casera con tostadas.",
+   ingredients:["100-160g de queso panela o fresco en trocitos","Tomate, cebolla y pimientos al gusto","Puré de tomate casero","1 cdita de aceite","1-2 tostadas horneadas","Frijoles molidos opcionales"],
+   prep:"Guisar el tomate, cebolla y pimientos con aceite. Agregar el queso y el puré de tomate. Cocinar hasta que el queso esté bien bañado. Servir con tostadas.",tip:""},
+  {id:10,name:"Cóctel de huevo",category:"desayuno",emoji:"🥚",
+   preview:"3 huevos cocidos en trocitos con aguacate, verduras y salmas.",
+   ingredients:["3 huevos cocidos, en trocitos","1/3 pza aguacate","Verduras al gusto","2 paquetes de salmas o tostadas horneadas"],
+   prep:"Cocer los huevos y cortarlos en trozos. Mezclar con el aguacate y las verduras al gusto. Servir con salmas o tostadas.",tip:""},
+  {id:11,name:"Avocado toast con huevo",category:"desayuno",emoji:"🥑",
+   preview:"Pan cero cero con guacamole, huevo revuelto y vinagre balsámico.",
+   ingredients:["2-3 rebanadas de pan cero cero o integral","1 cda de guacamole natural c/u","1 huevo revuelto c/u","Vinagre balsámico","Salsa al gusto","Pavo o salmón opcionales"],
+   prep:"Tostar el pan. Untar el guacamole. Colocar el huevo revuelto encima. Añadir un toque de vinagre balsámico y salsa.",tip:""},
+  {id:12,name:"Wrap de huevo con pavo",category:"desayuno",emoji:"🌯",
+   preview:"Huevo revuelto con pavo en pan pita Taquero de Libanius con guacamole.",
+   ingredients:["2 huevos revueltos","1-2 rebanadas de pechuga de pavo","1 pza pan pita Taquero de Libanius","1 cda de guacamole","Salsa al gusto","1 cdita de aceite"],
+   prep:"Guisar con aceite los huevos revueltos con el pavo. Poner el guiso dentro del pan pita. Agregar guacamole y salsa.",tip:""},
+  {id:13,name:"Chilaquiles con carne o machacado",category:"desayuno",emoji:"🫔",
+   preview:"Totopos horneados con salsa verde o roja, queso Oaxaca, huevo estrellado y carne.",
+   ingredients:["2 puños de totopos horneados (SUSALIA o Torti-Regias)","Salsa verde o roja casera","3 cdas de queso Oaxaca light rallado","1 huevo estrellado","Puñito de machacado o carne sobrante","1/3 pza aguacate","Pico de gallo"],
+   prep:"Calentar la salsa. Agregar los totopos y mezclar. Añadir el queso rallado. Colocar el huevo estrellado y la carne encima. Servir con aguacate y pico de gallo.",
+   tip:"Puedes usar la carne que haya sobrado de una comida anterior."},
+  {id:14,name:"French toast saludable",category:"desayuno",emoji:"🍞",
+   preview:"Pan integral bañado en huevo con leche, canela y vainilla. Con miel y yogurt.",
+   ingredients:["2 rebanadas de pan integral o masa madre","1 huevo","Chorrito de leche","Endulzante al gusto (miel, splenda o monk fruit)","Chorrito de vainilla","Canela al gusto","1 cdita de ghee o mantequilla","Yogurt o queso cottage (topping)","Frutos rojos opcionales"],
+   prep:"Batir el huevo con leche, endulzante, vainilla y canela. Bañar el pan en la mezcla. Cocinar con ghee en sartén a fuego medio hasta dorar. Servir con yogurt o cottage y fruta.",tip:""},
+  {id:15,name:"Smoothie de proteína (variantes)",category:"desayuno",emoji:"🥤",
+   preview:"Licuado de leche, proteína en polvo, fruta, espinacas y crema de cacahuate.",
+   ingredients:["1 tza leche deslactosada light o bebida vegetal sin azúcar","1 scoop de proteína HABITS o FALCON","Fruta al gusto: fresas, berries, plátano, mango congelado o manzana","Puño de espinacas","1 cda de crema de cacahuate o almendras sin azúcar","1 scoop de creatina (opcional)","2 cdas de avena (opcional)","1 cda de chía o linaza (opcional)","Hielos al gusto"],
+   prep:"Licuar todos los ingredientes hasta obtener una mezcla homogénea. Servir de inmediato. Variantes: fresa, mango, plátano-cacao, o berries.",
+   tip:"Aparece en los planes más recientes (sept 2024 en adelante). Ideal para días de gym."},
+  {id:16,name:"Miguitas con huevo",category:"desayuno",emoji:"🌽",
+   preview:"Tortillas en trocitos guisadas con tomate, cebolla, chile y 2-3 huevos.",
+   ingredients:["2-3 tortillas de maíz delgaditas en trocitos","Tomate, cebolla y poco chile al gusto","2-3 huevos","Sal y pimienta","1 cdita de aceite"],
+   prep:"Guisar con aceite las tortillas en trocitos. Agregar el tomate, cebolla y chile. Incorporar los huevos revueltos y cocinar hasta que todo esté listo.",tip:""},
+  {id:17,name:"Machacado con huevo",category:"desayuno",emoji:"🥩",
+   preview:"Carne seca guisada con pico de gallo, pimiento y 2 huevos en tortillas de maíz.",
+   ingredients:["2-3 cdas de carne seca","Tomate, cebolla, chile y/o pimiento verde al gusto","2 huevos","2 tortillas de maíz o 4 delgaditas","1/3 pza aguacate","1 cdita de aceite"],
+   prep:"Guisar con aceite la cebolla, pimiento, tomate y chile. Agregar la carne seca y los huevos. Mezclar y cocinar. Servir en tortillas con aguacate.",tip:""},
+  {id:18,name:"Overnight oats",category:"desayuno",emoji:"🌙",
+   preview:"Avena remojada toda la noche con leche, yogurt griego, chía y fruta.",
+   ingredients:["½ tza avena en hojuelas","¾ tza leche o bebida vegetal","3 cdas de yogurt griego sin azúcar","2 cdas de chía","Canela y vainilla al gusto","Endulzante al gusto (monk fruit o stevia)","1 cda crema de cacahuate o almendras sin azúcar","Fruta al gusto para el día siguiente"],
+   prep:"La noche anterior, mezclar avena, leche, yogurt, chía, canela, vainilla y endulzante en un frasco. Refrigerar toda la noche. Por la mañana, revolver y agregar la fruta y la crema de cacahuate.",tip:""},
+  {id:19,name:"Huevo con brócoli",category:"desayuno",emoji:"🥦",
+   preview:"Brócoli cocido guisado con cebolla, ajo, pimientos, 2 huevos y queso rallado.",
+   ingredients:["Brócoli al gusto","Abundante cebolla","1 diente de ajo","Pimiento en trocitos","2 huevos","Sazonador vegetal al gusto","3 cdas de queso rallado","1-2 rebanadas de pan cero cero","1 cdita de aceite"],
+   prep:"Cocer el brócoli en agua 5 minutos. En sartén con aceite, guisar la cebolla, ajo y pimiento. Agregar el brócoli, los huevos y sazonador vegetal. Al final agregar el queso rallado. Servir con el pan.",tip:""},
+  {id:20,name:"Huevo con papa rallada",category:"desayuno",emoji:"🥔",
+   preview:"Media papa mediana rallada y guisada con 2 huevos revueltos, sal y pimienta.",
+   ingredients:["½ papa mediana","2 huevos","Sal y pimienta","1 cdita de aceite"],
+   prep:"Cocer la papa en agua 5 minutos, rallarla. Guisar con aceite hasta dorar un poco. Agregar los 2 huevos revueltos, sal y pimienta. Cocinar hasta que todo esté listo.",tip:""},
+  {id:21,name:"Tostadas motuleñas",category:"desayuno",emoji:"🍳",
+   preview:"3 tortillas tostaditas con frijol, pechuga de pavo y huevo estrellado.",
+   ingredients:["3 tortillas de maíz tostaditas","1 cda de frijol molido c/u","1 rebanada de pechuga de pavo c/u","1 huevo estrellado c/u","Salsa al gusto"],
+   prep:"Tostar las tortillas. Untar frijol molido. Poner encima la rebanada de pavo y el huevo estrellado. Agregar salsa al gusto.",tip:""},
+  {id:22,name:"Chorizo con huevo",category:"desayuno",emoji:"🌶",
+   preview:"Chorizo de pavo o cerdo guisado con 2 huevos y tortillas de maíz.",
+   ingredients:["3 cdas de chorizo de cerdo o pavo","2 huevos","2 tostadas horneadas o tortillas de maíz","1/3 pza aguacate","1 cdita de aceite"],
+   prep:"Guisar el chorizo con aceite. Agregar los huevos y revolver. Servir con las tostadas o tortillas y el aguacate.",tip:""},
+  {id:23,name:"Licuado completo con avena",category:"desayuno",emoji:"🥛",
+   preview:"Licuado de leche, proteína, plátano o fresas, espinacas, crema de cacahuate y avena.",
+   ingredients:["1 tza leche o bebida vegetal sin azúcar","1 scoop de proteína HABITS","Fruta: 1 tza fresas O 1 plátano O 1 tza mango congelado","Puño de espinacas","1 cda crema de almendras o cacahuate sin azúcar","3 cdas avena","1 cda chía o linaza (opcional)","2 dátiles opcionales"],
+   prep:"Licuar todos los ingredientes. Puede acompañarse de 1-2 rebanadas de pan con crema de frutos secos.",tip:""},
+  {id:24,name:"Chobanni + pan",category:"desayuno",emoji:"🥛",
+   preview:"Yogurt Chobanni (20g proteína) con pan tostado dulce o salado.",
+   ingredients:["1 Chobanni complete (20g proteína)","Pan salado: 1-2 reb pan tostado con guacamole y pavo","Pan dulce: 1 reb pan con crema de cacahuate o almendras sin azúcar"],
+   prep:"Opción salada: tostar el pan y untar guacamole, agregar pavo. Opción dulce: untar crema de cacahuate o almendras. Acompañar con el Chobanni.",tip:"Aparece en los planes más recientes."},
+  {id:25,name:"Migas con huevo (versión pico de gallo)",category:"desayuno",emoji:"🥚",
+   preview:"Pico de gallo guisado con 3 huevos y tortillas en tiritas.",
+   ingredients:["Pico de gallo abundante (tomate, cebolla, chile, cilantro)","3 huevos","2 tortillas de maíz o 4 delgaditas en tiritas","Salsa verde o roja","1/3 pza aguacate","1 cdita de aceite"],
+   prep:"Guisar el pico de gallo con aceite. Agregar las tiritas de tortilla y los huevos. Mezclar y cocinar. Acompañar con salsa y aguacate.",tip:""},
+  {id:26,name:"Hot cakes con plátano (avena)",category:"desayuno",emoji:"🥞",
+   preview:"Hot cakes de harina de avena con plátano, huevo, leche y mantequilla.",
+   ingredients:["¾ tza harina de avena (o avena licuada)","2 huevos","½ tza leche o bebida vegetal","1 cdita polvo para hornear o bicarbonato","½ plátano","Vainilla y canela al gusto","1 cdita mantequilla para cocinar","1 cda crema de frutos secos"],
+   prep:"Licuar todos los ingredientes menos la mantequilla. Cocinar como hot cakes normales con mantequilla a fuego medio. Acompañar con la crema de frutos secos.",tip:""},
+
+  // ===== COMIDAS =====
+  {id:50,name:"Pasta salad de atún",category:"comida",emoji:"🍝",
+   preview:"Pasta fría con atún Dolores, aguacate, espinacas, tomate cherry y aceitunas.",
+   ingredients:["1-1½ tza de pasta cocida (coditos, fusilli o penne)","1-2 latas/sobres de atún Dolores Premium","1 cdita de aceite de oliva","Aguacate al gusto","Espinacas en tiras","Tomate cherry en mitades","Aceitunas, zanahoria rallada y pepino al gusto","Sal, pimienta y especias"],
+   prep:"Cocinar la pasta y dejar enfriar. Mezclar con el atún, aceite de oliva, aguacate, espinacas, tomate, aceitunas y zanahoria. Sazonar.",
+   tip:"Se puede comer frío. Perfecta para preparar con anticipación."},
+  {id:51,name:"Carne asada / a la plancha",category:"comida",emoji:"🥩",
+   preview:"Sirloin o filete de res asado con 3 tortillas, aguacate y verduras al vapor.",
+   ingredients:["Sirloin o filete de res (porción al gusto)","3 tortillas de maíz","Verduras al vapor o asadas","½ aguacate","Sal y especias al gusto"],
+   prep:"Asar o cocinar a la plancha el corte de res. Calentar las tortillas. Servir con verduras y aguacate.",
+   tip:"Si es comprada, procurar que sea carne magra."},
+  {id:52,name:"Pollo asado o rostizado",category:"comida",emoji:"🍗",
+   preview:"½ pechuga de pollo asado sin piel con arroz y verduras al vapor.",
+   ingredients:["½ pechuga o 2-3 piezas chicas de pollo sin piel","3/4 tza arroz ó 3-4 tortillas de maíz","Verduras al vapor o ensalada","½ aguacate"],
+   prep:"Asar el pollo o comprar rostizado sin piel. Servir con arroz o tortillas y guarnición de verduras.",
+   tip:"Puede ser comprado, solo sin piel."},
+  {id:53,name:"Tacos de picadillo",category:"comida",emoji:"🌮",
+   preview:"Carne molida 95:5 guisada con abundantes verduras en 3-4 tortillas de maíz.",
+   ingredients:["3 puños de carne molida de res 95:5 o 96:4","Zanahoria, calabacita, cebolla y pimientos al gusto","1 cdita de aceite","3-4 tortillas de maíz","Verduras al vapor","½ aguacate"],
+   prep:"Guisar la carne molida con aceite. Agregar las verduras bien picadas y cocinar. Servir en las tortillas.",tip:""},
+  {id:54,name:"Ceviche de pescado",category:"comida",emoji:"🐟",
+   preview:"Filete de pescado 'cocido' en limón con clamato, aguacate, pepino y chile serrano.",
+   ingredients:["Filete de pescado en trocitos","Abundante jugo de limón","½ tza jugo tipo V8 o clamato","1/3 pza aguacate","Pepino, tomate, cebolla y chile serrano al gusto","Cilantro","3 tostadas horneadas"],
+   prep:"Marinar el pescado en trocitos con abundante jugo de limón por 20+ minutos. Agregar V8, aguacate, pepino, tomate, cebolla, chile y cilantro. Servir con tostadas.",
+   tip:"Puede ser comprado."},
+  {id:55,name:"Toasts de salmón ahumado",category:"comida",emoji:"🍣",
+   preview:"Pan integral tostado con aguacate molido, salmón ahumado y ajonjolí negro.",
+   ingredients:["2 rebanadas de pan integral tostado","1 cda de aguacate molido c/u","Salmón ahumado en tiras","1 cdita de ajonjolí negro","Verduras al vapor o en ensalada","1 fruta de postre"],
+   prep:"Tostar el pan. Untar el aguacate molido. Colocar tiras de salmón y espolvorear el ajonjolí negro. Acompañar con verduras y fruta.",tip:""},
+  {id:56,name:"Pollo a la plancha con arroz",category:"comida",emoji:"🍚",
+   preview:"Pechuga grande de pollo a la plancha o airfryer con arroz y verduras al vapor.",
+   ingredients:["1 pza grande de pechuga de pollo","3/4 tza arroz cocido","Verduras al vapor mezcladas con el arroz (opcional)","Sal, pimienta y especias al gusto"],
+   prep:"Marinar y cocinar el pollo a la plancha o airfryer. Acompañar con arroz mezclado con verduras al vapor.",tip:""},
+  {id:57,name:"Pescado empapelado",category:"comida",emoji:"🐠",
+   preview:"Filetes de pescado con mantequilla y verduras coloridas, envueltos en aluminio.",
+   ingredients:["2-3 filetes de pescado medianos","1 cdita de mantequilla","Cebolla, tomate, pimientos de colores, champiñones, calabacita al gusto","Limón, sal, pimienta, paprika y albahaca","Verduras al vapor o elote","1-2 tostadas horneadas"],
+   prep:"Poner cada filete sobre papel aluminio. Agregar mantequilla, verduras y sazonadores. Cerrar bien el aluminio y hornear o cocinar en comal/airfryer hasta que el pescado esté cocido.",tip:""},
+  {id:58,name:"Pasta primavera con pollo",category:"comida",emoji:"🍝",
+   preview:"Pasta con verduras al sartén, aceite de oliva, limón y albahaca, con pechuga de pollo.",
+   ingredients:["1 tza pasta cocida (puede ser sin gluten)","1 pza grande de pechuga de pollo a la plancha","Calabacita, ajo, pimiento rojo, cebolla, zanahoria, espárragos al gusto","1 cdita de aceite de oliva","Sal, pimienta, limón y albahaca"],
+   prep:"Guisar las verduras al sartén con ajo. Mezclar con la pasta cocida, aceite de oliva, limón, sal y albahaca. Servir con el pollo a la plancha.",tip:""},
+  {id:59,name:"Enchiladas suizas",category:"comida",emoji:"🫔",
+   preview:"4-6 tortillas con pollo desmenuzado, salsa verde SIN aceite y queso rallado.",
+   ingredients:["4-6 tortillas de maíz delgaditas","Pollo desmenuzado ya cocido","Salsa verde SIN aceite","1 puño de queso fresco o panela rallado","½ aguacate"],
+   prep:"Rellenar las tortillas con pollo y doblar. Bañar con salsa verde sin aceite. Espolvorear queso y gratinar en sartén tapado o en el horno.",
+   tip:"Siempre empezar con verduras antes de este platillo."},
+  {id:60,name:"Caldo tlalpeño",category:"comida",emoji:"🥣",
+   preview:"Caldo de pollo con brócoli, zanahoria, queso panela, aguacate y chipotle.",
+   ingredients:["Caldo de pollo, res o verduras natural","Brócoli, zanahoria, calabacita, algo de papa al gusto","1 puño de queso panela","1/3 pza aguacate","Chorrito de chipotle","2 puños de pechuga de pollo ya cocida","Puré de tomate casero","1 puñito de totopos SUSALIA"],
+   prep:"Calentar el caldo con especias y puré de tomate. Agregar verduras y cocinar. Añadir el pollo, queso, aguacate y chipotle. Servir con totopos.",tip:""},
+  {id:61,name:"Salmón fácil a la plancha",category:"comida",emoji:"🐟",
+   preview:"Filetes de salmón con limón, jengibre y paprika, con espárragos y elote.",
+   ingredients:["2 filetes de salmón chicos","Jugo de limón, sal, pimienta, poco jengibre y paprika","Espárragos asados al sartén","1 tza elote desgranado","Algo de mantequilla o mayonesa para el elote"],
+   prep:"Sazonar el salmón. Cocinar a la plancha. Acompañar con espárragos asados al sartén y elote desgranado.",tip:""},
+  {id:62,name:"Rollitos de res o pollo",category:"comida",emoji:"🍱",
+   preview:"Milanesas aplanadas en rollitos con verduras en juliana, bañadas en salsa casera.",
+   ingredients:["2 milanesas de pollo o res aplanadas","Cebolla, zanahoria, chayote, calabacita en juliana","1 cdita de aceite","Salsa verde o roja casera","1 tza lentejas o frijoles"],
+   prep:"Cortar las milanesas en tiras. Rellenar con verduras en juliana y enrollar asegurando con palillos. Cocinar al sartén. Bañar con salsa. Acompañar con lentejas.",tip:""},
+  {id:63,name:"Entomatadas de pollo",category:"comida",emoji:"🫔",
+   preview:"6-7 tortillas con pollo desmenuzado, bañadas en salsa de tomate y queso panela.",
+   ingredients:["6-7 tortillas delgaditas","Pollo ya cocido y desmenuzado","Salsa de tomate natural","3-6 cdas queso panela rallado","Ensalada de espinacas con aceite de oliva y limón"],
+   prep:"Rellenar tortillas con pollo. Bañar con salsa de tomate. Espolvorear queso. Acompañar con ensalada.",tip:""},
+  {id:64,name:"Tostadas de picadillo",category:"comida",emoji:"🫓",
+   preview:"3-4 tostadas horneadas con carne molida guisada con abundantes verduras.",
+   ingredients:["3-4 tostadas horneadas","3 puños de carne molida de res guisada con cebolla, calabacitas, pimientos y zanahoria","½ aguacate","1 cdita de aceite"],
+   prep:"Guisar la carne molida con aceite y verduras. Servir sobre las tostadas con aguacate.",tip:""},
+  {id:65,name:"Albóndigas en caldo o pasta",category:"comida",emoji:"🍲",
+   preview:"6-7 albóndigas de res en caldo con verduras, o mezcladas con pasta y salsa.",
+   ingredients:["6-7 bolitas de carne molida de res","1 huevo (empanizador)","Sal y especias al gusto","Verduras abundantes para el caldo","2-3 tostadas horneadas ó pasta cocida con salsa de tomate"],
+   prep:"Mezclar carne, huevo, sal y especias. Formar bolitas. Cocer en caldo con verduras O cocinarlas en airfryer y mezclar con pasta y salsa de tomate. Empezar con nopalitos de entrada.",tip:""},
+  {id:66,name:"Pollo al horno con verduras",category:"comida",emoji:"🍖",
+   preview:"Muslitos de pollo horneados sobre cama de verduras variadas con arroz.",
+   ingredients:["3-4 muslitos de pollo","Zanahoria, ejotes, tomate, calabacita, chayote al gusto","Sal, pimienta y paprika","PAM o 1 cdita de mantequilla","3/4 tza arroz"],
+   prep:"Engrasar un pyrex. Colocar verduras sazonadas. Poner los muslitos encima también sazonados. Hornear hasta cocinar bien. Acompañar con arroz.",tip:""},
+  {id:67,name:"Picadillo light",category:"comida",emoji:"🥗",
+   preview:"Carne molida 95:5 con verduras, con ensalada de espinacas y arándanos.",
+   ingredients:["2 buenos puños de carne molida 95:5","Calabacita, zanahoria y cebolla","1 cdita de aceite de aguacate","Espinacas, pepino, arándanos, zanahoria rallada, tomate cherry (ensalada)","3-4 tortillas"],
+   prep:"Guisar la carne con aceite y verduras. Preparar ensalada con espinacas, pepino, arándanos, zanahoria y tomate cherry. Aderezar con limón y sal. Servir con tortillas.",tip:""},
+  {id:68,name:"Salmón encebollado",category:"comida",emoji:"🐟",
+   preview:"Salmón con cebolla abundante, champiñones, verduras al vapor y arroz.",
+   ingredients:["2 filetes de salmón chicos","Cebolla fileteada abundante","Sal, ajo, pimienta y albahaca","1 cdita de aceite","Champiñones guisados","Verduras al vapor","3/4 tza arroz"],
+   prep:"Guisar el salmón con aceite. Agregar cebolla fileteada, sal, ajo, pimienta y albahaca. Acompañar con champiñones, verduras y arroz.",tip:""},
+  {id:69,name:"Fajitas de res con pasta o ejotes",category:"comida",emoji:"🥩",
+   preview:"Fajitas de sirloin con cebolla, ejotes y salsa verde casera.",
+   ingredients:["2 buenos puños de fajitas de sirloin","Cebolla, tomate, ejotes abundantes","Salsa verde casera","Verduras al vapor","1½ tza pasta ó 3 tortillas"],
+   prep:"Guisar las fajitas con verduras. Bañar con salsa verde. Acompañar con verduras y pasta o tortillas.",tip:""},
+  {id:70,name:"Bowl de pollo oriental",category:"comida",emoji:"🍜",
+   preview:"Arroz con mix de verduras orientales salteadas y pollo troceado con salsa de soya.",
+   ingredients:["3/4 tza arroz cocido","Mix de verduras orientales congeladas (stirfry, sin sazonador)","2 buenos puños de pollo en trocitos guisado al sartén","Poca salsa de soya reducida en sodio"],
+   prep:"Calentar el mix de verduras al sartén. Guisar el pollo en trocitos. Mezclar con el arroz. Aderezar con poca salsa de soya.",tip:""},
+  {id:71,name:"Salmón en aguachile",category:"comida",emoji:"🌶",
+   preview:"Salmón ahumado marinado en limón con salsa de serrano, cilantro y pepino.",
+   ingredients:["2 filetes de salmón ahumado chicos en tiras","Abundante jugo de limón, sal y pimienta","3 chiles serranos para la salsa","Puño de cilantro","Sal de ajo y salsa de soya reducida en sodio","Cebolla morada y abundante pepino","3/4 tza arroz"],
+   prep:"Marinar el salmón en limón, sal y pimienta. Hacer la salsa licuando los serranos, cilantro, sal de ajo y soya. Agregar cebolla morada y pepino. Servir con arroz.",tip:""},
+  {id:72,name:"Camarones rancheros",category:"comida",emoji:"🦐",
+   preview:"Camarones guisados con tomate, cebolla y jalapeño, bañados en puré de tomate.",
+   ingredients:["2-3 buenos puños de camarones","Tomate, cebolla y poco chile jalapeño","Puré de tomate casero","3 tortillas de maíz o 6 delgaditas","Brócoli al sartén con pimienta cayena"],
+   prep:"Guisar los camarones con tomate, cebolla y jalapeño. Bañar en puré de tomate casero. Acompañar con tortillas y brócoli.",tip:""},
+  {id:73,name:"Poke bowl de salmón",category:"comida",emoji:"🍱",
+   preview:"Arroz con salmón ahumado, pepino, zanahoria, aguacate y salsa coconut aminos.",
+   ingredients:["3/4 tza arroz cocido","Tiras de salmón ahumado","Pepino crudo, zanahoria rallada, poco perejil","1/3 pza aguacate","Ajonjolí tostado","4 cdas de coconut liquid aminos BRAGG + limón + poco jugo de naranja + chile en polvo (salsa)"],
+   prep:"Servir el arroz en bowl. Colocar encima el salmón, pepino, zanahoria y aguacate. Espolvorear ajonjolí. Mezclar los ingredientes de la salsa y agregar al gusto.",tip:""},
+  {id:74,name:"Hamburguesita casera de res",category:"comida",emoji:"🍔",
+   preview:"Hamburguesa de carne molida 95:5 en bimbollo cero cero con aguacate y verduras.",
+   ingredients:["1 bimbollo cero cero o pan integral de panadería","1 pza grande de carne molida 95:5 con clara de huevo, sal y pimienta","1/3 pza aguacate","Verduras al gusto (lechuga, tomate, cebolla)","½ papa guisada al sartén"],
+   prep:"Mezclar la carne con clara de huevo, sal y pimienta. Cocinar como hamburguesa al sartén o airfryer. Armar con aguacate y verduras. Acompañar con papas.",
+   tip:"Empezar con ensalada."},
+  {id:75,name:"Pasta a la boloñesa",category:"comida",emoji:"🍝",
+   preview:"1½ tza pasta con salsa de tomate casera y carne molida de res guisada con verduras.",
+   ingredients:["1½ tza pasta cocida","Salsa de tomate casera con orégano o hierbas italianas","3 puños de carne molida 95:5","Tomate, pimiento, zanahoria y calabacita al gusto"],
+   prep:"Guisar la carne molida con las verduras. Mezclar con la pasta cocida y la salsa de tomate. Cocinar a fuego bajo 5 minutos.",tip:""},
+  {id:76,name:"Salpicón de res",category:"comida",emoji:"🥗",
+   preview:"Falda de res deshebrada con cebolla morada, verduras y chiles en vinagre.",
+   ingredients:["2 buenos puños de falda de res deshebrada","Cebolla morada, ejotes, zanahoria, chayote en tiras, calabaza","Chiles en vinagre al gusto","3-4 tostadas horneadas","1/3 pza aguacate"],
+   prep:"Mezclar la carne deshebrada con cebolla morada, verduras en tiras y chiles en vinagre. Servir sobre las tostadas con aguacate.",tip:""},
+  {id:77,name:"Gyros de pollo",category:"comida",emoji:"🫓",
+   preview:"Fajitas de pollo con champiñones y cebolla en pan pita con jocoque chipotle.",
+   ingredients:["2 buenos puños de fajitas de pollo","Champiñones, cebolla, ajo y tomate al gusto","2 pzas de pan pita (1 c/u)","1 cda de jocoque con chipotle o mayonesa chipotle","Ensalada o verduras al vapor"],
+   prep:"Guisar las fajitas de pollo con champiñones, cebolla, ajo y tomate. Servir en cada pan pita con el jocoque chipotle. Empezar con ensalada.",tip:""},
+  {id:78,name:"Betabel con carne",category:"comida",emoji:"🫐",
+   preview:"Betabel cocido con jocoque, aceite de oliva y balsámico, con sirloin y tortillas.",
+   ingredients:["1 betabel cocido en trocitos","1-2 cdas de jocoque","1 cdita de aceite de oliva","1 cda de balsámico + jugo de limón","2 pzas medianas de sirloin asado o a la plancha","2 tortillas de maíz o 4 delgaditas"],
+   prep:"Mezclar el betabel con jocoque, aceite de oliva, balsámico y limón. Servir junto con el sirloin asado y las tortillas.",tip:""},
+  {id:79,name:"Pollo en la airfryer con arroz",category:"comida",emoji:"🍗",
+   preview:"Pechuga de pollo con lemon pepper en airfryer con arroz y verduras al vapor.",
+   ingredients:["1 pza mediana de pechuga de pollo","Lemon pepper al gusto","3/4 tza arroz cocido","Abundantes verduras al vapor mezcladas con el arroz"],
+   prep:"Sazonar el pollo con lemon pepper. Guisar en airfryer o al sartén con poco aceite. Acompañar con arroz mezclado con verduras.",tip:""},
+  {id:80,name:"Papas con pollo",category:"comida",emoji:"🥔",
+   preview:"Pechuga de pollo troceada con papa, cebolla y jalapeño en puré de tomate.",
+   ingredients:["1 pza grande de pechuga de pollo en trozos","1 papa previamente cocida en agua","Tomate, cebolla y poco chile jalapeño","Puré de tomate casero","2 tortillas de maíz","Brócoli al sartén con pimienta cayena"],
+   prep:"Guisar el pollo con la papa cocida, tomate, cebolla y jalapeño. Bañar en puré de tomate. Acompañar con tortillas y brócoli.",tip:""},
+  {id:81,name:"Ensalada Santa Fe",category:"comida",emoji:"🥗",
+   preview:"Mix de lechugas, pollo a la plancha, col, zanahoria, aguacate y vinagreta balsámica.",
+   ingredients:["Mix de lechugas","1 pza grande de pechuga de pollo sazonada a la plancha","Col, zanahoria rallada, 1/3 pza aguacate","Pico de gallo","1 cdita aceite de oliva + limón + vinagre balsámico","1 paquete de salmas"],
+   prep:"Preparar la base de ensalada. Cocinar el pollo a la plancha. Preparar la vinagreta. Servir el pollo en rebanadas sobre la ensalada con el aderezo.",
+   tip:"Se puede pedir en Super Salads o preparar en casa."},
+  {id:82,name:"Pollo empanizado en airfryer",category:"comida",emoji:"🍗",
+   preview:"Pechuga de pollo empanizada con avena o galleta salada, cocinada en airfryer.",
+   ingredients:["1 pza grande de pechuga de pollo","Galleta salada molida + sal + pimienta + paprika + chile en polvo + queso parmesano (empanizado)","1 huevo (para empanar)","Verduras al sartén","1 tza pasta con salsa de tomate"],
+   prep:"Batir el huevo. Mezclar los ingredientes del empanizado. Bañar el pollo en huevo y luego en la mezcla. Cocinar en airfryer hasta dorar. Acompañar con verduras y pasta.",tip:""},
+  {id:83,name:"Muslitos al horno (receta clásica)",category:"comida",emoji:"🍖",
+   preview:"Muslitos de pollo horneados o en airfryer con papa y especias.",
+   ingredients:["4-6 muslitos de pollo","Sal, paprika, pimienta y albahaca al gusto","1 cdita de aceite de oliva","1 papa grande cocida hecha puré con mantequilla y queso rallado","1-2 tostadas horneadas","Verduras al gusto"],
+   prep:"Barnizar los muslitos con aceite mezclado con especias. Hornear o cocinar en airfryer. Hacer puré de la papa cocida con mantequilla y queso. Servir con tostadas.",tip:""},
+  {id:84,name:"Arroz y pescado con verduras",category:"comida",emoji:"🐡",
+   preview:"Filetes de pescado a la plancha con arroz mezclado con elote y verduras guisadas.",
+   ingredients:["2 filetes de pescado medianos","½ tza arroz cocido","½ tza elote desgranado","Calabacitas, zanahoria, pimientos y cebolla guisadas","½ cdita de ghee o mantequilla","1 cdita de aceite de aguacate"],
+   prep:"Guisar las verduras con aceite. Mezclar el arroz con el elote y la mantequilla. Cocinar los filetes de pescado a la plancha. Servir todo junto.",tip:""},
+
+  // ===== CENAS =====
+  {id:100,name:"Costras de queso con pavo",category:"cena",emoji:"🫓",
+   preview:"Costras de queso Oaxaca light en sartén con pechuga de pavo y tortilla delgadita.",
+   ingredients:["4-8 puñitos de queso Oaxaca light rallado","Rebanadas de pechuga de pavo","Tortillas de maíz delgaditas","1/3 pza aguacate","Salsa al gusto"],
+   prep:"Colocar el queso en sartén antiadherente a fuego medio. Al hacerse la costra, voltear y agregar pavo y tortilla encima. Voltear y cocinar hasta que la tortilla quede al punto deseado.",tip:""},
+  {id:101,name:"Omelette con queso y pavo",category:"cena",emoji:"🍳",
+   preview:"Omelette de 3 huevos con pavo, zanahoria, espinacas y queso Oaxaca light.",
+   ingredients:["3 huevos","2-3 rebanadas de pechuga de pavo","Zanahoria, espinacas, tomate, cebolla y chile al gusto","1 cdita de aceite","3 cdas queso Oaxaca light rallado","4-6 tortillas delgaditas"],
+   prep:"Batir huevos con pavo y verduras picadas. Cocinar como omelette. Al voltear, agregar el queso para que se derrita. Acompañar con tortillas.",tip:""},
+  {id:102,name:"Pizzita casera",category:"cena",emoji:"🍕",
+   preview:"Pan pita integral Libanius con salsa para pizza, queso rallado, pavo y verduras.",
+   ingredients:["1 pza pan pita integral Libanius","1-2 cdas salsa para pizza HEB Organics o salsa de tomate con orégano","1 puño queso Oaxaca light rallado","Pavo en trozos, champiñones, pimientos, espinacas al gusto","Ensalada de acompañamiento"],
+   prep:"Poner el pan pita. Untar la salsa. Agregar queso y toppings. Cocinar al sartén tapado o en airfryer hasta que el queso se derrita. Empezar con ensalada.",tip:""},
+  {id:103,name:"Quesadillas con aguacate",category:"cena",emoji:"🧀",
+   preview:"4-6 tortillas delgaditas con queso panela rallado, aguacate y salsa.",
+   ingredients:["4-6 tortillas delgaditas","Queso panela rallado al gusto","½ pza aguacate","Pico de gallo o salsa al gusto"],
+   prep:"Poner tortillas en sartén. Agregar queso y doblar. Cocinar hasta que el queso se derrita. Servir con aguacate y salsa.",tip:""},
+  {id:104,name:"Atún a la mexicana",category:"cena",emoji:"🐟",
+   preview:"Atún Dolores con aguacate, limón, tomate, cebolla y chile en tostadas.",
+   ingredients:["1-1½ latas de atún Dolores Premium","1/3 pza aguacate en trocitos","Jugo de 2-3 limones","Tomate, cebolla y chile al gusto","4-6 tostadas Torti-Regias o Sanissimo"],
+   prep:"Mezclar el atún escurrido con aguacate, limón, tomate, cebolla y chile. Servir sobre tostadas.",tip:""},
+  {id:105,name:"Nachos con carne",category:"cena",emoji:"🫔",
+   preview:"Totopos horneados con frijoles, queso Oaxaca, falda deshebrada, huevo y aguacate.",
+   ingredients:["2 puños de totopos horneados","½ tza frijol molido (con poco caldo)","1 puñito queso Oaxaca light rallado","2 puños de falda de res deshebrada o carne de taquitos","1 huevo estrellado","1/3 pza aguacate","Pico de gallo"],
+   prep:"Calentar frijoles. Colocar totopos en plato. Agregar frijoles, queso, carne caliente, huevo estrellado, aguacate y pico de gallo.",tip:""},
+  {id:106,name:"Tostadas de pollo",category:"cena",emoji:"🫓",
+   preview:"2-3 tostadas horneadas con guacamole, pollo desmenuzado y verduras.",
+   ingredients:["2-3 tostadas horneadas","1 cda guacamole natural c/u","70g de pollo desmenuzado ya cocido","Lechuga, tomate, cebolla al gusto","Salsa al gusto"],
+   prep:"Colocar guacamole sobre cada tostada. Agregar el pollo y las verduras. Servir con salsa.",tip:""},
+  {id:107,name:"Molletes",category:"cena",emoji:"🍞",
+   preview:"Pan con frijol molido abundante, queso fresco o panela, aguacate y salsa.",
+   ingredients:["2 rebanadas de pan integral o cero cero","1-2 cdas frijol molido c/u","Queso panela o fresco en trocitos abundante","1/3 pza aguacate","Salsa al gusto"],
+   prep:"Tostar el pan. Untar el frijol molido. Agregar queso en trocitos. Gratinar hasta que el queso esté suave. Servir con aguacate y salsa.",tip:""},
+  {id:108,name:"Ensalada búfalo de pollo",category:"cena",emoji:"🥗",
+   preview:"Ensalada con pollo en salsa búfalo, aguacate, arándanos y vinagreta de manzana.",
+   ingredients:["Lechuga, zanahoria, pepino, tomate, aguacate","1 pza chica de pechuga de pollo en fajitas","Algo de salsa búfalo","½ tza arándanos","1 cda vinagre de manzana + limón + sal + eneldo"],
+   prep:"Guisar el pollo con salsa búfalo. Preparar la ensalada y la vinagreta. Servir el pollo sobre la ensalada.",tip:""},
+  {id:109,name:"Sándwich completo de pavo",category:"cena",emoji:"🥪",
+   preview:"Pan cero cero con mayonesa o aguacate, pavo, queso panela, huevo y espinacas.",
+   ingredients:["2 rebanadas de pan cero cero","1 cdita mayonesa o 1/3 pza aguacate","2 rebanadas pechuga de pavo","2 rebanadas queso panela","1 huevo estrellado","Espinacas al gusto"],
+   prep:"Armar el sándwich con todos los ingredientes. Acompañar con ensalada.",tip:""},
+  {id:110,name:"Atropellado light",category:"cena",emoji:"🌮",
+   preview:"Carne de res deshebrada con pimientos guisados en 2 tortillas de maíz.",
+   ingredients:["1 puño carne de res deshebrada (marca HEB)","Pimientos de colores al gusto","1 cdita de aceite","2 tortillas de maíz"],
+   prep:"Guisar la carne deshebrada con aceite y pimientos. Servir en las tortillas.",tip:""},
+  {id:111,name:"Milanesa de pollo con verduras",category:"cena",emoji:"🍗",
+   preview:"Milanesa de pollo en fajitas guisada con cebolla, pimientos y zanahoria con arroz.",
+   ingredients:["1 milanesa grande de pollo","Cebolla, pimientos y zanahoria o calabacita al gusto","3/4 tza arroz","Verduras al vapor o ensalada para empezar"],
+   prep:"Cortar la milanesa en fajitas. Guisar con cebolla y verduras. Acompañar con arroz. Empezar con verduras.",tip:""},
+  {id:112,name:"Carne asada de cena",category:"cena",emoji:"🥩",
+   preview:"Sirloin asado o a la plancha con aguacate, verduras asadas y 3 tortillas.",
+   ingredients:["1 pza chica o mediana de sirloin","1/3 pza aguacate","Verduras asadas al gusto","2-3 tortillas de maíz"],
+   prep:"Asar o cocinar el sirloin a la plancha. Acompañar con aguacate, verduras asadas y tortillas.",tip:""},
+  {id:113,name:"Pasta salad de cena",category:"cena",emoji:"🍝",
+   preview:"Pasta fría con atún, aceitunas, aguacate, espinacas y tomate cherry.",
+   ingredients:["1 tza pasta cocida","1 cdita aceite de oliva","Aguacate al gusto","1 lata o sobre de atún","Espinacas en tiras","Tomate cherry y aceitunas","Zanahoria rallada, sal y especias"],
+   prep:"Mezclar todos los ingredientes. Se puede comer frío.",tip:""},
+  {id:114,name:"Ensalada Capresse",category:"cena",emoji:"🍅",
+   preview:"Tomate con albahaca, aceite de oliva, balsámico, queso panela y espinacas.",
+   ingredients:["Tomate picado abundante","Albahaca fresca","1 cdita aceite de oliva + vinagre balsámico","Sal y pimienta","¼ pza queso panela en cuadritos","Espinacas picadas","½ tza crutones"],
+   prep:"Mezclar el tomate con la albahaca, aceite, balsámico, sal y pimienta. Agregar el queso panela y las espinacas picadas. Terminar con crutones.",
+   tip:"Postre sugerido: 1 tza de uvas en mitades + 1 cda de yogurt + canela."},
+  {id:115,name:"Ceviche de queso panela",category:"cena",emoji:"🧀",
+   preview:"Queso panela en trocitos con tomate, cebolla, aguacate, cilantro y limón.",
+   ingredients:["2 puños de queso panela en trocitos","Tomate, cebolla, cilantro al gusto","1/3 pza aguacate","Chile al gusto","Jugo de ½ limón, poca sal","2-3 tostadas horneadas"],
+   prep:"Mezclar el queso con el tomate, cebolla, cilantro, aguacate, chile, limón y sal. Servir con tostadas horneadas.",tip:""},
+  {id:116,name:"Rajas con queso",category:"cena",emoji:"🌶",
+   preview:"Chile poblano con cebolla, queso panela, elote y 1 tortilla de maíz.",
+   ingredients:["Abundante cebolla","Chile poblano (puede ser congelado)","¼ pza queso panela","½ tza elote desgranado","1 tortilla de maíz","1 cdita de ghee"],
+   prep:"Guisar con ghee la cebolla abundante. Agregar el chile poblano, queso panela y elote. Servir con la tortilla de maíz.",tip:""},
+  {id:117,name:"Ensalada de atún con tostadas",category:"cena",emoji:"🥗",
+   preview:"Atún Dolores con tomate cherry, cebolla morada, aguacate, limón y tostadas.",
+   ingredients:["1 lata atún Dolores Premium","Tomate cherry, cebolla morada picada","1/3 pza aguacate","Cilantro al gusto","Jugo de ½ limón, sal y pimienta","1-2 tostadas horneadas"],
+   prep:"Mezclar el atún con tomate, cebolla morada, aguacate, cilantro, limón, sal y pimienta. Servir con tostadas.",tip:""},
+  {id:118,name:"Queso asado en salsa verde",category:"cena",emoji:"🫓",
+   preview:"Queso panela asado en sartén hasta quemadito, bañado en salsa verde con pico de gallo.",
+   ingredients:["1/3-½ pza queso panela en láminas","Salsa verde casera","Abundante pico de gallo","1/3 pza aguacate","2-3 tostadas horneadas"],
+   prep:"Poner el queso en láminas al sartén a fuego medio hasta que quede quemadito. Bañar con salsa verde casera. Acompañar con pico de gallo, aguacate y tostadas.",tip:""},
+  {id:119,name:"Ensalada griega con garbanzo",category:"cena",emoji:"🥗",
+   preview:"Garbanzo enlatado con pepino, tomate cherry, cebolla morada, queso panela y vinagreta.",
+   ingredients:["1 tza garbanzo (enlatado o cocido)","Pepino, tomate cherry, cebolla morada al gusto","60g queso panela en trocitos","1 cda vinagreta de aceite de oliva, limón, sal y eneldo"],
+   prep:"Mezclar el garbanzo con las verduras y el queso. Preparar la vinagreta y aderezar al momento de servir.",tip:""},
+  {id:120,name:"Wrap de pollo con espinacas",category:"cena",emoji:"🌯",
+   preview:"Pollo en trocitos guisado con espinacas y cebolla en pan pita con jocoque.",
+   ingredients:["1 pza mediana de pollo en trocitos","Espinacas y cebolla abundante","1 pza pan pita integral Libanius","1 cda jocoque (opcional)"],
+   prep:"Guisar el pollo con espinacas y cebolla. Hacer el wrap con el pan pita y agregar el jocoque.",tip:""},
+  {id:121,name:"Ensalada Paraíso",category:"cena",emoji:"🌟",
+   preview:"Mix de lechugas con betabel rallado, arándanos enchilados, pollo y vinagreta.",
+   ingredients:["Mix de lechugas y espinacas","Zanahoria rallada, betabel rallado","½ tza arándanos deshidratados enchilados o maguitos","Pollo a la plancha","1-2 cdas de vinagreta"],
+   prep:"Preparar la base de ensalada con lechugas, zanahoria y betabel rallados. Agregar los arándanos enchilados. Servir con el pollo a la plancha y la vinagreta.",tip:""},
+  {id:122,name:"Chilaquiles de cena",category:"cena",emoji:"🫔",
+   preview:"Totopos horneados con salsa verde o roja, queso, huevos o pollo desmenuzado.",
+   ingredients:["3-4 tzas totopos horneados","Salsa verde o roja","3 puñitos queso Oaxaca, panela o mozzarella","2 huevos O pollo desmenuzado O res deshebrada","1/3 pza aguacate"],
+   prep:"Bañar los totopos con la salsa. Agregar el queso. Colocar los huevos o la proteína elegida. Servir con aguacate.",tip:""},
+  {id:123,name:"Tostadas de frijol con queso y pavo",category:"cena",emoji:"🫓",
+   preview:"2-3 tostadas con frijol molido, pechuga de pavo y queso panela en trocitos.",
+   ingredients:["2-3 tostadas horneadas","1 cda frijol molido c/u","1 rebanada de pechuga de pavo c/u","Queso panela en trocitos abundante","1/3 pza aguacate","Salsa al gusto"],
+   prep:"Untar el frijol en cada tostada. Agregar el pavo y el queso panela. Servir con aguacate y salsa.",tip:""},
+  {id:124,name:"Sándwich de atún",category:"cena",emoji:"🥪",
+   preview:"Pan integral con ensalada de atún, mayonesa, espinacas y zanahoria rallada.",
+   ingredients:["2 rebanadas de pan integral","1 lata de atún con 1-2 cditas de mayonesa","Espinacas en tiras y zanahoria rallada","Verduras al gusto","Jalapeños opcionales"],
+   prep:"Mezclar el atún con mayonesa y verduras. Armar el sándwich. Acompañar con ensalada.",tip:""},
+  {id:125,name:"Smoothie SOS (cena fácil)",category:"cena",emoji:"🥤",
+   preview:"Licuado de leche, proteína, frutos rojos congelados y crema de cacahuate.",
+   ingredients:["1 tza leche deslactosada light","1 scoop de proteína","1 tza frutos rojos congelados","1 cdita crema de cacahuate sin azúcar","Puño de espinacas"],
+   prep:"Licuar todos los ingredientes. Opcionalmente acompañar con 2 rebanadas de pan con crema de almendras.",
+   tip:"Para cuando no tienes ganas de cocinar."},
+  {id:126,name:"Bowl con atún y arroz",category:"cena",emoji:"🍱",
+   preview:"Arroz o quinoa con atún, aguacate, queso philadelphia en cubitos y verduras.",
+   ingredients:["½-¾ tza arroz o quinoa cocido","1 sobre o lata de atún","1/3 pza aguacate","2 deditos de philadelphia en cuadritos","Pepino, zanahoria rallada y tomate cherry"],
+   prep:"Servir el arroz en bowl. Colocar el atún, aguacate, philadelphia y verduras. Mezclar al gusto.",tip:""},
+  {id:127,name:"Tacos de milanesa con champiñones",category:"cena",emoji:"🌮",
+   preview:"Milanesas de pollo en cuadritos con pico de gallo, champiñones y queso.",
+   ingredients:["2 milanesas de pollo en cuadritos","Pico de gallo y champiñones al gusto","Poco queso mozzarella o Oaxaca","3 tortillas de maíz","Verduras al gusto"],
+   prep:"Cocinar las milanesas en cuadritos con pico de gallo y champiñones. Agregar el queso al final. Servir en tortillas con verduras.",tip:""},
+  {id:128,name:"Quesadillas con champiñones y espinacas",category:"cena",emoji:"🧀",
+   preview:"Quesadillas de maíz con champiñones, espinacas, cebolla y queso Oaxaca.",
+   ingredients:["3 tortillas de maíz o 6 delgaditas","Cebolla, ajo picado, espinacas y champiñones al gusto","Queso Oaxaca, mozzarella o panela","1/3 pza aguacate","1 cdita de aceite"],
+   prep:"Guisar cebolla, ajo, espinacas y champiñones. Colocar en las tortillas con el queso. Calentar hasta que el queso se derrita. Servir con aguacate.",tip:""},
+  {id:129,name:"Envueltos de picadillo",category:"cena",emoji:"🌯",
+   preview:"Tortillas de maíz rellenas de carne molida 90:10 con verduras y salsa.",
+   ingredients:["3-4 tortillas de maíz o 6-8 delgaditas","Carne molida 90:10 guisada con pico de gallo y salsa verde o roja","Lechuga o espinacas, tomate, cebolla morada"],
+   prep:"Calentar las tortillas. Rellenar con la carne molida. Agregar verduras frescas y envolver.",tip:""},
+  {id:130,name:"Caldo de lentejas con pollo",category:"cena",emoji:"🥣",
+   preview:"1 tza lentejas en caldo con pico de gallo y queso rallado, con pollo a la plancha.",
+   ingredients:["1 tza lentejas cocidas + caldo","Pico de gallo al gusto","¼ tza queso rallado (opcional)","1 pza chica de pollo a la plancha"],
+   prep:"Calentar las lentejas con caldo. Agregar el pico de gallo y queso rallado. Acompañar con la peza de pollo a la plancha.",tip:""},
+  {id:131,name:"Atún con elote",category:"cena",emoji:"🌽",
+   preview:"Atún con mayonesa, jocoque chipotle y elote desgranado en tostadas.",
+   ingredients:["1½ latas atún Dolores premium en agua","1 cdita de mayonesa","2 cdas de jocoque con chipotle","½ tza elote desgranado","Lechuga o espinacas al gusto","1-2 tostadas horneadas"],
+   prep:"Mezclar el atún con mayonesa, jocoque chipotle y elote. Servir sobre lechuga o espinacas y acompañar con tostadas.",tip:""},
+  {id:132,name:"Ensalada de pollo con aderezo de aguacate",category:"cena",emoji:"🥗",
+   preview:"Tostadas con pollo y aderezo cremoso de aguacate, yogurt griego y ajo.",
+   ingredients:["Pollo desmenuzado ya cocido","½ pza aguacate","3 cdas yogurt griego","1 diente de ajo, sal de ajo, cebolla en polvo, pimienta","3-4 tostadas horneadas"],
+   prep:"Licuar el aguacate, yogurt, ajo, sal de ajo, cebolla en polvo y pimienta. Mezclar con el pollo desmenuzado. Poner sobre las tostadas horneadas.",tip:""},
+  {id:133,name:"Tacos de carne asada variada",category:"cena",emoji:"🌮",
+   preview:"Carne asada (arrachera, sirloin, t-bone o rib eye) en 3 tortillas con guacamole.",
+   ingredients:["Carne asada: arrachera, sirloin, t-bone o rib eye (porción al gusto)","3 tortillas de maíz","Guacamole","Salsa verde o roja","Verduras al gusto"],
+   prep:"Asar o comprar la carne asada. Servir en tortillas con guacamole y salsa.",tip:""},
+];
+
+let activeFilter = 'all';
+
+function renderRecipes(list) {
+  const grid = document.getElementById('recipesGrid');
+  const badge = document.getElementById('countBadge');
+  badge.textContent = list.length;
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><h3>No se encontraron recetas</h3><p>Intenta con otro término</p></div>`;
+    return;
+  }
+  grid.innerHTML = list.map((r, i) => `
+    <div class="recipe-card" style="animation-delay:${i*0.03}s" onclick="openModal(${r.id})">
+      <div class="card-header">
+        <div class="meal-emoji">${r.emoji}</div>
+        <div class="card-title">${r.name}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-preview">${r.preview}</div>
+        <div class="card-tags">
+          <span class="tag tag-${r.category}">${r.category==='desayuno'?'🌅 Desayuno':r.category==='comida'?'☀️ Comida':'🌙 Cena'}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterRecipes() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  let filtered = recipes;
+  if (activeFilter !== 'all') filtered = filtered.filter(r => r.category === activeFilter);
+  if (q) filtered = filtered.filter(r =>
+    r.name.toLowerCase().includes(q) ||
+    r.preview.toLowerCase().includes(q) ||
+    r.ingredients.some(i => i.toLowerCase().includes(q))
+  );
+  renderRecipes(filtered);
+}
+
+function setFilter(filter, btn) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterRecipes();
+}
+
+function openModal(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('modalEmoji').textContent = r.emoji;
+  document.getElementById('modalTitle').textContent = r.name;
+  const labels = {desayuno:'🌅 Desayuno',comida:'☀️ Comida',cena:'🌙 Cena'};
+  document.getElementById('modalMealType').textContent = labels[r.category];
+  document.getElementById('modalIngredients').innerHTML = r.ingredients.map(i => `<li>${i}</li>`).join('');
+  document.getElementById('modalPrep').textContent = r.prep;
+  const tipEl = document.getElementById('modalTip');
+  if (r.tip) { tipEl.style.display='block'; tipEl.innerHTML=`<strong>💡 Tip:</strong> ${r.tip}`; }
+  else { tipEl.style.display='none'; }
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(e) { if (e.target===document.getElementById('modalOverlay')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow=''; }
+
+const snackStates = {};
+function toggleSnacks(id, toggleId) {
+  snackStates[id] = !snackStates[id];
+  const content = document.getElementById(id);
+  const toggle = document.getElementById(toggleId);
+  content.style.display = snackStates[id] ? 'flex' : 'none';
+  toggle.textContent = snackStates[id] ? '▲' : '▼';
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModalDirect(); });
+renderRecipes(recipes);
+</script>
+</body>
+</html>
